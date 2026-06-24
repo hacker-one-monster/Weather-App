@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Weather App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #71b7e6, #9b59b6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .wrapper {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            width: 400px;
+            box-shadow: 0px 15px 20px rgba(0,0,0,0.1);
+        }
+        header {
+            font-size: 24px;
+            font-weight: 600;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .input-part {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        .input-part input {
+            height: 50px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            padding: 0 15px;
+            font-size: 17px;
+            outline: none;
+        }
+        .input-part input:focus {
+            border-color: #9b59b6;
+        }
+        .input-part button {
+            height: 50px;
+            width: 100%;
+            border: none;
+            background: #9b59b6;
+            color: #fff;
+            font-size: 18px;
+            font-weight: 500;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .input-part button:hover {
+            background: #8e44ad;
+        }
+        .weather-part {
+            display: none;
+            margin-top: 30px;
+            text-align: center;
+        }
+        .weather-part img {
+            width: 100px;
+        }
+        .weather-part .temp {
+            font-size: 60px;
+            font-weight: 500;
+            margin-top: -10px;
+        }
+        .weather-part .weather {
+            font-size: 22px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 20px;
+        }
+        .weather-part .location {
+            font-size: 18px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .weather-part .bottom-details {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        .bottom-details .column {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .column span {
+            font-size: 25px;
+            color: #9b59b6;
+        }
+        .column .details {
+            font-size: 15px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="wrapper">
+        <header>Weather App</header>
+        
+        <!-- Search Section -->
+        <div class="input-part">
+            <input type="text" placeholder="Enter city name and press Enter" spellcheck="false" id="cityInput">
+            <button id="searchBtn">Get Weather</button>
+        </div>
+
+        <!-- Weather Display Section -->
+        <div class="weather-part" id="weatherPart">
+            <img src="" alt="Weather Icon" id="weatherIcon">
+            <div class="temp"><span id="tempVal">__</span>°C</div>
+            <div class="weather" id="weatherDesc">Condition</div>
+            <div class="location"><span id="cityName">City, Country</span></div>
+            
+            <div class="bottom-details">
+                <div class="column">
+                    <span>🌡️</span>
+                    <div class="details">
+                        <span id="humidityVal">__%</span>
+                        <p>Humidity</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = "203d3dbeae341f7733f9c4dc211c36fd"; // Replace with your OpenWeatherMap API Key
+        const cityInput = document.getElementById("cityInput");
+        const searchBtn = document.getElementById("searchBtn");
+        const weatherPart = document.getElementById("weatherPart");
+        
+        // DOM elements for data
+        const tempVal = document.getElementById("tempVal");
+        const weatherDesc = document.getElementById("weatherDesc");
+        const cityName = document.getElementById("cityName");
+        const humidityVal = document.getElementById("humidityVal");
+        const weatherIcon = document.getElementById("weatherIcon");
+
+        searchBtn.addEventListener("click", () => {
+            if (cityInput.value !== "") {
+                fetchWeather(cityInput.value);
+            }
+        });
+
+        cityInput.addEventListener("keyup", (e) => {
+            if (e.key === "Enter" && cityInput.value !== "") {
+                fetchWeather(cityInput.value);
+            }
+        });
+
+        function fetchWeather(city) {
+            const api = `https://api.openweathermap.org/data/2.5/weather?q=${city}&units=metric&appid=${apiKey}`;
+            
+            fetch(api)
+                .then(response => response.json())
+                .then(result => {
+                    if(result.cod == "404"){
+                        alert("City not found. Please enter a valid city name.");
+                    } else {
+                        showWeatherDetails(result);
+                    }
+                })
+                .catch(() => {
+                    alert("Something went wrong. Check your internet connection.");
+                });
+        }
+
+        function showWeatherDetails(info) {
+            const city = info.name;
+            const country = info.sys.country;
+            const temp = Math.floor(info.main.temp);
+            const description = info.weather[0].description;
+            const humidity = info.main.humidity;
+            const iconCode = info.weather[0].icon;
+
+            // Update UI elements
+            cityName.innerText = `${city}, ${country}`;
+            tempVal.innerText = temp;
+            weatherDesc.innerText = description.charAt(0).toUpperCase() + description.slice(1);
+            humidityVal.innerText = `${humidity}%`;
+           weatherIcon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
+
+            // Display the weather part
+            weatherPart.style.display = "block";
+        }
+    </script>
+</body>
+</html>
